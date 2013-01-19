@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="NSReport">
+
+	<resultMap id="connessioneMap" class="it.webapp.perla.beans.Connessione">
+		<result property="id" column="id" nullValue="0"/>
+	    <result property="nome" column="nome" nullValue=""/>
+	    <result property="username" column="username" nullValue=""/>
+	    <result property="password" column="password" nullValue=""/>
+	    <result property="url" column="url" nullValue=""/>
+	    <result property="driver" column="driver" nullValue=""/>
+	    <result property="tipo" column="tipo" nullValue=""/>
+	    <result property="dbParam" column="dbparam" nullValue=""/>
+	</resultMap>
+
+	<select id="getConnessioniByFiltro" resultMap="connessioneMap">
+	    SELECT 
+		  c.id, c.nome, c.username, c.password, c.url, c.driver, c.tipo, c.dbparam
+		FROM 
+		  report.connessioni c
+		WHERE TRUE 
+			<isNotNull property="nome" prepend="AND">
+				c.nome ILIKE '$nome$%'
+			</isNotNull>
+	</select>
+	
+	<select id="getConnessioniById" resultMap="connessioneMap">
+	    SELECT 
+		  c.id, c.nome, c.username, c.password, c.url, c.driver, c.tipo, c.dbparam
+		FROM 
+		  report.connessioni c
+		WHERE c.id=#id#
+	</select>
+	
+	<update id="updateConnessione">
+	    UPDATE report.connessioni
+	    SET "password"=#password#, nome=#nome#, username=#username#, 
+	    	url=#url#, driver=#driver#, tipo=#tipo#, dbparam=#dbparam#
+	    WHERE id=#id#
+	</update>
+
+  	<insert id="insertConnessione">
+  		<selectKey keyProperty="id" resultClass="int">SELECT COALESCE (MAX(id), 0) +1 FROM utenti.utente</selectKey >
+	    INSERT INTO report.connessioni(id, username, "password", nome, url, driver, tipo, dbparam) 
+	    VALUES (#id#, #username#, #password#, #nome#, #url#, #driver#, #tipo#, #dbParam#)
+  	</insert>
+  
+  	<delete id="deleteConnessione">
+  		DELETE FROM report.connessioni WHERE id=#id#
+  	</delete>
+</sqlMap>

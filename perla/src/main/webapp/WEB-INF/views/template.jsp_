@@ -1,0 +1,89 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%-- @ taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql" --%>
+<%-- @ taglib prefix="x" uri="http://java.sun.com/jsp/jstl/xml" --%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
+
+	<jsp:include page="../layout/header.jsp"></jsp:include>
+	<body class="bodypage">
+		<jsp:include page="../layout/subHeader.jsp"></jsp:include>
+		<div id="box-inside-white">
+			<div class="wrapper">
+				<div class="row">
+					<jsp:include page="../layout/leftSide.jsp"></jsp:include>
+					<div class="divdx">
+						<div id="header-sub-title">Titolo</div>
+						<div id="header-sub-action">
+							<ul>
+								<li><a href="action.do"><img style="padding-right: 5px; padding-left: 3px;vertical-align: middle;" src="${pageContext.request.contextPath}/icon/raster/gray_light/plus_8x8.png" alt="Report" border="0"/>Aggiungi</a></li>
+								<%--
+								<li><a href="action.do">Aggiungi</a></li>
+								<li><a href="action.do">Aggiungi</a></li>
+								<li><a href="action.do">Aggiungi</a></li>
+								<li class="last"><a href="action.do">Aggiungi</a></li>
+								--%>
+							</ul>
+						</div>
+						<c:if test="${not empty ok_action}">
+							<c:if test="${ok_action}">
+								<div class="success"><!-- spring:message code="message.ok_action" htmlEscape="false"/ --></div></c:if>
+							<c:if test="${not ok_action}">
+								<div class="warning"><!-- spring:message code="message.ko_action" htmlEscape="false"/ --></div></c:if>
+						</c:if>
+						<c:if test="${not empty msg_info}"><div class="info">${msg_info}</div></c:if>
+						<c:if test="${not empty msg_ok}"><div class="success">${msg_ok}</div></c:if>
+						<c:if test="${not empty msg_warning}"><div class="warning">${msg_warning}</div></c:if>
+						<c:if test="${not empty msg_error}"><div class="error">${msg_error}</div></c:if>
+						<table class="stiletab" style="width: 100%;">
+							<thead>
+								<tr><th>User Name</th><th>Password</th><th>Cognome</th><th>Nome</th></tr>
+							</thead>
+							<tbody>
+								<c:forEach items="${lista}" var="item">
+									<tr>
+										<td><a href="showUtente.do?id=${item.id}">${item.userName}</a></td><td>${item.password}</td><td>${item.cognome}</td><td>${item.nome}</td>
+									</tr>
+								</c:forEach>
+							</tbody>
+						</table>
+						<form method="post" action="" class="forms columnar">
+						    <fieldset>
+						        <ul>
+						            <li>
+						                <label for="user_email" class="bold">Email</label>
+						                <input type="email" name="user_email" id="user_email" size="40" />
+						            </li>
+						            <li>
+						                <label for="user_name" class="bold">Name</label>
+						                <input type="text" name="user_name" id="user_name" size="40" />
+						            </li>
+						            <li>	
+						                <fieldset>
+						                    <section>
+						                        <label class="bold">Width 100</label>
+						                    </section>
+						                    <input type="text" class="width-100" />
+						                </fieldset>
+						            </li>
+						            <li>
+						                <fieldset>
+						                    <section>
+						                        <label class="bold">Textarea</label>
+						                    </section>
+						                    <textarea class="width-100" style="height: 100px;"></textarea>
+						                </fieldset>
+						            </li>
+						            <li class="push">
+						                <input type="submit" name="send" class="btn" value="Submit" />
+						            </li>		        		
+						        </ul>
+						    </fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

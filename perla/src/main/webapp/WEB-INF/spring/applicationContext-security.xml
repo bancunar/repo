@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 	xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    	xmlns:security="http://www.springframework.org/schema/security"
+		xmlns:p="http://www.springframework.org/schema/p" 
+		xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+	
+	<!-- This is where we configure Spring-Security  -->
+	<security:http pattern="/css/**" security="none"></security:http>
+	<security:http pattern="/icon/**" security="none"></security:http>
+	<security:http pattern="/img/**" security="none"></security:http>
+	<security:http pattern="/bootstrap/**" security="none"></security:http>
+	
+	<!-- PER ESPRESSIONI di 'ACCESS=*' vedere qui http://static.springsource.org/spring-security/site/docs/3.1.x/reference/el-access.html -->
+	<security:http auto-config="false" use-expressions="true" access-denied-page="/denied.do" entry-point-ref="authenticationEntryPoint" >
+		<security:intercept-url pattern="/login.do" access="permitAll"/>
+		<security:intercept-url pattern="/private/*.do" access="hasRole('ROLE_ADMIN')"/>
+		<security:intercept-url pattern="/controller/*.do" access="hasRole('ROLE_CONTROLLER')"/>
+		<security:intercept-url pattern="/public/*.do" access="hasRole('ROLE_USER') or hasRole('ROLE_GUEST')"/>
+		<security:intercept-url pattern="/switchAuthHome.do" access="isAuthenticated()"/>
+		<security:intercept-url pattern="/j_spring_security_check" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+		
+        <!-- <security:intercept-url pattern="/login" access="IS_AUTHENTICATED_ANONYMOUSLY"/> -->    
+            
+		<security:logout 
+				invalidate-session="true" 
+				logout-success-url="/login.do" 
+				logout-url="/logout.do"/>
+	
+		<security:custom-filter ref="blacklistFilter" before="FILTER_SECURITY_INTERCEPTOR"/>
+    	<security:custom-filter ref= "concurrencyFilter" position="CONCURRENT_SESSION_FILTER" />  
+		<security:custom-filter ref="authenticationFilter" position="FORM_LOGIN_FILTER"/>
+		
+		<security:session-management session-authentication-strategy-ref="sas"/>
+		<!--  
+		<security:custom-filter ref="accessDecisionManager" />
+		<beans:property name="filterProcessesUrl" value="/j_spring_security_check"/> -->
+	</security:http>
+	
+ 	<!--  Custom filter to deny unwanted users even though registered -->
+ 	<bean id="blacklistFilter" class="it.webapp.perla.filter.BlacklistFilter" />
+ 	<!--  
+ 	<bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased">
+        <property name="decisionVoters">
+            <list>
+                <bean class="org.springframework.security.access.vote.RoleVoter"/>
+                <bean class="org.springframework.security.web.access.expression.WebExpressionVoter"/>
+            </list>
+        </property>
+    </bean>
+    -->
+    
+    <bean id="sas" class="org.springframework.security.web.authentication.session.ConcurrentSessionControlStrategy">
+    	<constructor-arg name="sessionRegistry" ref="sessionRegistry" />
+    	<property name="maximumSessions" value="1" />
+  	</bean>
+    
+    <bean id="concurrencyFilter" class="org.springframework.security.web.session.ConcurrentSessionFilter"
+    	p:sessionRegistry-ref="sessionRegistry"
+    	p:expiredUrl="/session-expired.htm"/>
+    	
+    <bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl" />
+    
+ 	<!-- Custom filter for username and password. The real customization is done in the customAthenticationManager -->
+ 	<bean id="authenticationFilter" class="org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter"
+ 		p:sessionAuthenticationStrategy-ref="sas"
+  		p:authenticationManager-ref="customAuthenticationManager"
+  		p:authenticationFailureHandler-ref="customAuthenticationFailureHandler"
+  		p:authenticationSuccessHandler-ref="customAuthenticationSuccessHandler"/>
+  		
+	<!-- Custom authentication manager. In order to authenticate, username and password must not be the same -->
+	<bean id="customAuthenticationManager" class="it.webapp.perla.filter.CustomAuthenticationManager"/>
+ 	
+ 	<!-- We just actually need to set the default failure url here -->
+ 	<bean id="customAuthenticationFailureHandler" class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler"
+ 		p:defaultFailureUrl="/login.do?error=true" />
+ 		
+ 	 <!-- We just actually need to set the default target url here -->
+ 	<bean id="customAuthenticationSuccessHandler" class="org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler"
+ 		p:defaultTargetUrl="/switchAuthHome.do" />
+ 	
+ 	<!-- The AuthenticationEntryPoint is responsible for redirecting the user to a particular page, like a login page,
+ 			whenever the server sends back a response requiring authentication -->
+ 	<!-- See Spring-Security Reference 5.4.1 for more info -->
+ 	<bean id="authenticationEntryPoint"  class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint"
+	 	p:loginFormUrl="/login.do"/>
+
+	<!-- The tag below has no use but Spring Security needs it to autowire the parent property of 
+			org.springframework.security.authentication.ProviderManager. Otherwise we get an error 
+			A probable bug. This is still under investigation-->
+	<security:authentication-manager/>
+</beans>

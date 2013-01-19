@@ -1,0 +1,57 @@
+/* CSS per applicazione Perla */
+/* TABLE */
+table.stiletab {
+  color: #666;
+}
+table.stiletab thead td,
+table.stiletab thead th{
+  background-color: #EDEDED;
+  border-right: 1px solid #A9A9A9;
+  border-bottom: 2px solid #A9A9A9;
+  padding: 2px 0 2px 3px;
+}
+table.stiletab thead th:last-child{
+  background-color: #EDEDED;
+  padding: 2px 0 2px 3px;
+}
+
+table.stiletab tbody td,
+table.stiletab tbody th {
+  padding: 0 0 0 3px;
+  border-bottom: 1px solid #EDEDED;
+}
+table.stiletab tbody tr:hover td,
+table.stiletab thead tr:hover th {
+  background-color: #f6f6f6;
+}
+/* TABLE -------------------------------------------------------------------------------------- */
+
+/* MESSAGE */
+.info, .success, .warning, .error, .validation {
+	/* border: 1px solid; */
+	margin: 10px 0px;
+	padding: 5px 10px 5px 50px;
+	background-repeat: no-repeat;
+	background-position: 10px center;
+}
+.info {
+	color: #00529B;
+	background-color: #BDE5F8;
+	background-image: url('../icon/raster/blue/info_8x16.png');
+}
+.success {
+	color: #4F8A10;
+	background-color: #DFF2BF;
+	background-image:url('../icon/raster/green/info_8x16.png');
+}
+.warning {
+	color: #9F6000;
+	background-color: #FEEFB3;
+	background-image: url('../icon/raster/yellow/info_8x16.png');
+}
+.error {
+	color: #D8000C;
+	background-color: #FFBABA;
+	background-image: url('../icon/raster/red/info_8x16.png');
+}
+/* MESSAGE --------------------------------------------------------------------------------- */

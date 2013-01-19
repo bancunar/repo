@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="NSUtenti">
+
+	<resultMap id="utenteMap" class="it.webapp.perla.beans.Utente">
+		<result property="id" column="id" nullValue="0"/>
+	    <result property="userName" column="username" nullValue=""/>
+	    <result property="password" column="password" nullValue=""/>
+	    <result property="nome" column="nome" nullValue=""/>
+	    <result property="cognome" column="cognome" nullValue=""/>
+	    <result property="attivo" column="attivo" nullValue="false"/>
+	    <result property="ruoli" column="username" select="getRuoliByUtente"/>
+	</resultMap>
+	
+	<resultMap id="ruoloMap" class="it.webapp.perla.beans.Ruolo">
+		<result property="ruolo" column="ruolo" nullValue=""/>
+	    <result property="maschera" column="maschera" nullValue=""/>
+	    <result property="descrizione" column="descrizione" nullValue=""/>
+	    <result property="selezionato" column="selezionato" nullValue="false"/>
+	</resultMap>
+	
+	<select id="getUtenteForAuthentication" resultMap="utenteMap">
+	    SELECT 
+		  id,
+		  username,
+		  nome,
+		  cognome,
+		  password, attivo
+		FROM 
+		  utenti.utente
+		WHERE username=#value#
+	</select>
+	
+	<select id="getRuoliByUtente" resultMap="ruoloMap">
+		<!--  
+	    SELECT 
+		  r.ruolo,
+		  r.maschera,
+		  r.descrizione
+		FROM 
+		  utenti.ruoli r INNER JOIN utenti.utente_ruolo ur ON (ur.ruolo=r.ruolo)
+		WHERE ur.username=#value#
+		-->
+		SELECT 
+		  r.ruolo,
+		  r.maschera,
+		  r.descrizione,
+		  CASE WHEN (ur.ruolo IS NOT NULL) THEN TRUE ELSE FALSE END selezionato
+		FROM 
+		  utenti.ruoli r LEFT JOIN utenti.utente_ruolo ur ON (ur.ruolo=r.ruolo AND ur.username = #value#)
+		ORDER BY r.ruolo
+	</select>
+	
+	<select id="getUtenteByIdOrUserName" resultMap="utenteMap">
+	    SELECT 
+		  id,
+		  username,
+		  nome,
+		  cognome,
+		  password, attivo
+		FROM 
+		  utenti.utente
+	    WHERE attivo IS TRUE AND 
+	    	<isNotEqual property="userName" compareValue="admin">
+		    	<isNotEqual property="id" compareValue="0">id = #id#</isNotEqual>
+		    	<isEqual property="id" compareValue="0">username = #userName#</isEqual>
+		    </isNotEqual>
+		    <isEqual property="userName" compareValue="admin">
+		    	username = #userName# AND id=0
+		    </isEqual> 
+	</select>
+	
+	<select id="getUtentiByFiltro" resultMap="utenteMap">
+	    SELECT 
+		  id,
+		  username,
+		  nome,
+		  cognome,
+		  password, attivo
+		FROM 
+		  utenti.utente
+		WHERE attivo IS TRUE
+	</select>
+	
+	<update id="updatePasswordUtente">
+	    UPDATE utenti.utente 
+	    SET password=#password#
+	    WHERE id=#id#
+	</update>
+	
+	<update id="updateUtente">
+	    UPDATE utenti.utente 
+	    SET nome=#nome#, cognome=#cognome#, username=#userName#, attivo=#attivo#
+	    WHERE id=#id#;
+	    
+	    DELETE FROM utenti.utente_ruolo WHERE username=#userName#; 
+	    <iterate property="ruoli">
+	    	<isEqual property="ruoli[].selezionato" compareValue="true">
+		    	INSERT INTO utenti.utente_ruolo(ruolo, username) 
+				VALUES (#ruoli[].ruolo#,#userName#);
+			</isEqual>
+	    </iterate>
+	</update>
+	
+	<update id="updateUtenteCambioPassword">
+	    UPDATE utenti.utente 
+	    SET password=#password#
+	    WHERE id=#id#;
+	</update>
+	
+	<insert id="insertStartAdmin">
+  		INSERT INTO utenti.utente (id, username, "password", nome, cognome, attivo ) 
+	    VALUES (#id#, #userName#, #password#, #nome#, #cognome#, #attivo#);
+	    
+	    INSERT INTO utenti.utente_ruolo (ruolo, username) 
+	    VALUES ('ROLE_ADMIN',#userName#)
+  	</insert>
+  	
+  	<insert id="insertUtente">
+  		<selectKey keyProperty="id" resultClass="int">SELECT COALESCE (MAX(id), 0) +1 FROM utenti.utente</selectKey >
+	    INSERT INTO utenti.utente (id, username, "password", nome, cognome, attivo ) 
+	    VALUES (#id#, #userName#, #password#, #nome#, #cognome#, #attivo#);
+	    
+	    DELETE FROM utenti.utente_ruolo WHERE username=#userName#; 
+	    <iterate property="ruoli">
+	    	<isEqual property="ruoli[].selezionato" compareValue="true">
+		    	INSERT INTO utenti.utente_ruolo(ruolo, username) 
+				VALUES (#ruoli[].ruolo#,#userName#);
+			</isEqual>
+	    </iterate>
+  	</insert>
+  
+  	<delete id="deleteUtente">
+  		DELETE FROM utenti.utente where id=#id#
+  	</delete>
+</sqlMap>
